@@ -1,0 +1,12 @@
+[Unit]
+Description=Send boot notification email
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=CONFIG=/etc/andrzej-tools.conf
+ExecStart=/usr/local/sbin/boot-mail
+
+[Install]
+WantedBy=multi-user.target

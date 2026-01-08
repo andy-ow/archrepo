@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-/etc/andrzej-tools.conf}"
+[[ -r "$CONFIG" ]] && # shellcheck disable=SC1090
+source "$CONFIG"
+
+: "${RECIPIENT:?missing RECIPIENT in $CONFIG}"
+THROTTLE_SEC="${AUTH_THROTTLE_SEC:-600}"
+
+STATE_DIR="/var/lib/andrzej-tools/auth-watch"
+mkdir -p "$STATE_DIR"
+
+send_mail() {
+  local subject="$1" body="$2"
+  {
+    printf "Subject: %s\n" "$subject"
+    printf "To: %s\n" "$RECIPIENT"
+    printf "\n%s\n" "$body"
+  } | msmtp -t
+}
+
+should_send() {
+  local key="$1"
+  local now last f
+  now="$(date +%s)"
+  f="${STATE_DIR}/${key}.last"
+  last="$(cat "$f" 2>/dev/null || echo 0)"
+  if (( now - last >= THROTTLE_SEC )); then
+    echo "$now" >"$f"
+    return 0
+  fi
+  return 1
+}
+
+host="$(hostname -f 2>/dev/null || hostname)"
+
+journalctl -f -o cat -t sshd --no-pager |
+while IFS= read -r line; do
+  # "Failed password for (invalid user )?USER from IP port ..."
+  if [[ "$line" == *"Failed password for"* && "$line" == *" from "* ]]; then
+    ip="$(sed -nE 's/.* from ([0-9a-fA-F\.:]+) port .*/\1/p' <<<"$line" | head -n1)"
+    user="$(sed -nE 's/.*Failed password for (invalid user )?([^ ]+).*/\2/p' <<<"$line" | head -n1)"
+    [[ -n "$ip" && -n "$user" ]] || continue
+
+    key="ssh_${ip}_${user}"
+    if should_send "$key"; then
+      ts="$(date -Is)"
+      subj="[AUTH-FAIL][SSH] ${host}: ${user} from ${ip}"
+      body="Time: ${ts}
+Host: ${host}
+Type: SSH bad password
+User: ${user}
+Source: ${ip}
+
+Log line:
+${line}"
+      send_mail "$subj" "$body" || true
+    fi
+  fi
+done

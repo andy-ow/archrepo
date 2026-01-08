@@ -1,0 +1,9 @@
+[Unit]
+Description=Ping watch (all targets from /etc/andrzej-tools.conf)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=CONFIG=/etc/andrzej-tools.conf
+ExecStart=/usr/local/sbin/ping-watch

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-/etc/andrzej-tools.conf}"
+[[ -r "$CONFIG" ]] && # shellcheck disable=SC1090
+source "$CONFIG"
+
+: "${RECIPIENT:?missing RECIPIENT in $CONFIG}"
+
+host="$(hostname -f 2>/dev/null || hostname)"
+ts="$(date -Is)"
+boot_id="$(cat /proc/sys/kernel/random/boot_id 2>/dev/null || echo unknown)"
+kernel="$(uname -r)"
+ips="$(ip -br a 2>/dev/null | sed 's/[[:space:]]\+/ /g')"
+
+{
+  printf "Subject: [BOOT] %s (%s)\n" "$host" "$boot_id"
+  printf "To: %s\n" "$RECIPIENT"
+  printf "\n"
+  printf "Time: %s\nHost: %s\nKernel: %s\nBoot-ID: %s\n\nInterfaces:\n%s\n" \
+    "$ts" "$host" "$kernel" "$boot_id" "$ips"
+} | msmtp -t

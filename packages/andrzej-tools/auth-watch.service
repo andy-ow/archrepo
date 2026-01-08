@@ -1,0 +1,14 @@
+[Unit]
+Description=Watch auth failures (sshd) and email alerts
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=CONFIG=/etc/andrzej-tools.conf
+ExecStart=/usr/local/sbin/auth-watch
+Restart=always
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target

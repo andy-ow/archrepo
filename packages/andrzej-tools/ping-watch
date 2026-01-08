@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG="${CONFIG:-/etc/andrzej-tools.conf}"
+[[ -r "$CONFIG" ]] && # shellcheck disable=SC1090
+source "$CONFIG"
+
+: "${RECIPIENT:?missing RECIPIENT in $CONFIG}"
+: "${PING_TARGETS:?missing PING_TARGETS in $CONFIG}"
+
+PING_COUNT="${PING_COUNT:-2}"
+PING_TIMEOUT="${PING_TIMEOUT:-2}"
+PING_DEADLINE="${PING_DEADLINE:-10}"
+
+STATE_DIR="/var/lib/andrzej-tools/ping-watch"
+LOCK_FILE="/var/lib/andrzej-tools/ping-watch.lock"
+mkdir -p "$STATE_DIR"
+
+exec 9>"$LOCK_FILE"
+flock -n 9 || exit 0
+
+host="$(hostname -f 2>/dev/null || hostname)"
+
+is_up() {
+  local target="$1"
+  timeout "$PING_DEADLINE" ping -n -c "$PING_COUNT" -W "$PING_TIMEOUT" "$target" >/dev/null 2>&1
+}
+
+send_mail() {
+  local subject="$1" body="$2"
+  {
+    printf "Subject: %s\n" "$subject"
+    printf "To: %s\n" "$RECIPIENT"
+    printf "\n%s\n" "$body"
+  } | msmtp -t
+}
+
+for item in $PING_TARGETS; do
+  name="${item%%=*}"
+  target="${item#*=}"
+  [[ -n "$name" && -n "$target" ]] || continue
+
+  state_file="$STATE_DIR/${name}.state"
+  prev="$(cat "$state_file" 2>/dev/null || echo "unknown")"
+
+  if is_up "$target"; then
+    echo "up" >"$state_file"
+    continue
+  fi
+
+  # DOWN now
+  if [[ "$prev" != "down" ]]; then
+    ts="$(date -Is)"
+    subject="[PING-DOWN] ${host} -> ${name} (${target})"
+    body="Time: ${ts}
+Host: ${host}
+Target: ${name}
+Address: ${target}
+
+Ping failed. One-time alert; next alert will be sent after link recovers and fails again."
+    send_mail "$subject" "$body" || true
+  fi
+
+  echo "down" >"$state_file"
+done

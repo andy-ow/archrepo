@@ -1,0 +1,32 @@
+pkgname=andrzej-tools
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Andrzej system tools (ping-watch, boot-mail, auth-watch)"
+arch=('any')
+license=('MIT')
+depends=('bash' 'iputils' 'msmtp' 'systemd' 'util-linux' 'iproute2' 'coreutils')
+
+source=(
+  "ping-watch"
+  "ping-watch@.service"
+  "ping-watch@.timer"
+  "boot-mail"
+  "boot-mail.service"
+  "auth-watch"
+  "auth-watch.service"
+)
+
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+  # scripts
+  install -Dm755 ping-watch   "$pkgdir/usr/local/sbin/ping-watch"
+  install -Dm755 boot-mail    "$pkgdir/usr/local/sbin/boot-mail"
+  install -Dm755 auth-watch   "$pkgdir/usr/local/sbin/auth-watch"
+
+  # systemd units
+  install -Dm644 ping-watch@.service "$pkgdir/usr/lib/systemd/system/ping-watch@.service"
+  install -Dm644 ping-watch@.timer   "$pkgdir/usr/lib/systemd/system/ping-watch@.timer"
+  install -Dm644 boot-mail.service   "$pkgdir/usr/lib/systemd/system/boot-mail.service"
+  install -Dm644 auth-watch.service  "$pkgdir/usr/lib/systemd/system/auth-watch.service"
+}

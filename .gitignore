@@ -1,0 +1,11 @@
+# artefakty makepkg
+packages/*/src/
+packages/*/pkg/
+packages/*/*.pkg.tar.*
+packages/*/*.log
+
+# lokalne repo (będzie publikowane na gh-pages, nie na main)
+repo/
+
+# worktree gh-pages
+.worktree-ghpages/

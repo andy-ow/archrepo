@@ -9,3 +9,5 @@ repo/
 
 # worktree gh-pages
 .worktree-ghpages/
+.idea/
+*.iml

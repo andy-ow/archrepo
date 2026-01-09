@@ -35,13 +35,17 @@ should_send() {
 
 host="$(hostname -f 2>/dev/null || hostname)"
 
-journalctl -f -o cat -t sshd --no-pager |
+# U Ciebie realne logi idą jako sshd-session; zostawiamy też sshd dla kompletności.
+journalctl -f -o cat -t sshd -t sshd-session --no-pager |
 while IFS= read -r line; do
-  # "Failed password for (invalid user )?USER from IP port ..."
-  if [[ "$line" == *"Failed password for"* && "$line" == *" from "* ]]; then
-    ip="$(sed -nE 's/.* from ([0-9a-fA-F\.:]+) port .*/\1/p' <<<"$line" | head -n1)"
-    user="$(sed -nE 's/.*Failed password for (invalid user )?([^ ]+).*/\2/p' <<<"$line" | head -n1)"
-    [[ -n "$ip" && -n "$user" ]] || continue
+  # Obsługa:
+  # Failed password for USER from IP port N ssh2
+  # Failed password for invalid user USER from IP port N ssh2
+  # IP może być IPv4, IPv6, a czasem IPv6 z suffixem %iface (np. fe80::...%wlp2s0)
+  if [[ "$line" =~ Failed\ password\ for\ (invalid\ user\ )?([^[:space:]]+)\ from\ ([^[:space:]]+)\ port\ ([0-9]+)\ ssh2 ]]; then
+    user="${BASH_REMATCH[2]}"
+    ip="${BASH_REMATCH[3]}"
+    port="${BASH_REMATCH[4]}"
 
     key="ssh_${ip}_${user}"
     if should_send "$key"; then
@@ -52,6 +56,7 @@ Host: ${host}
 Type: SSH bad password
 User: ${user}
 Source: ${ip}
+Port: ${port}
 
 Log line:
 ${line}"

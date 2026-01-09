@@ -8,8 +8,12 @@ WT="$ROOT/.worktree-ghpages"
 TOKEN_FILE="${GITHUB_TOKEN_FILE:-}"
 GITHUB_USER="${GITHUB_USER:-x-access-token}"
 
-# upewnij się że worktree istnieje
-if [[ ! -d "$WT/.git" ]]; then
+# upewnij się że worktree istnieje (worktree ma .git często jako plik)
+if [[ ! -e "$WT/.git" ]]; then
+  # jeśli katalog istnieje, ale nie jest worktree, usuń go (żeby worktree add nie wywalił)
+  if [[ -e "$WT" ]]; then
+    rm -rf "$WT"
+  fi
   git -C "$ROOT" worktree add "$WT" gh-pages
 fi
 
@@ -37,12 +41,15 @@ case "$1" in
   *) cat "$GITHUB_TOKEN_FILE" ;;
 esac
 EOF
+  cleanup() { rm -f "$tmp"; }
+  trap cleanup EXIT
+
   export GIT_ASKPASS="$tmp"
   export GIT_TERMINAL_PROMPT=0
   export GITHUB_TOKEN_FILE
   export GITHUB_USER
   git push origin gh-pages
-  rm -f "$tmp"
+  unset GIT_ASKPASS GIT_TERMINAL_PROMPT
 else
   git push origin gh-pages
 fi

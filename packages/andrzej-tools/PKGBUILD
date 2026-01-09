@@ -1,6 +1,6 @@
 pkgname=andrzej-tools
-pkgver=0.1.0
-pkgrel=1
+pkgver=0.1.1
+pkgrel=2
 pkgdesc="Andrzej system tools (ping-watch, boot-mail, auth-watch)"
 arch=('any')
 license=('MIT')

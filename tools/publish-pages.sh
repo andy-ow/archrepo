@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WT="$ROOT/.worktree-ghpages"
+git -C "$ROOT" worktree prune || true
 
 # gdzie jest token (plik ma zawierać sam token w 1 linii)
 TOKEN_FILE="${GITHUB_TOKEN_FILE:-}"
@@ -48,8 +49,8 @@ EOF
   export GIT_TERMINAL_PROMPT=0
   export GITHUB_TOKEN_FILE
   export GITHUB_USER
-  git push origin gh-pages
+  git push -u origin gh-pages
   unset GIT_ASKPASS GIT_TERMINAL_PROMPT
 else
-  git push origin gh-pages
+  git push -u origin gh-pages
 fi

@@ -1,0 +1,30 @@
+post_install() {
+  cat <<'MSG'
+==> andrzej-tools: instalacja zakończona
+
+Konfiguracja:
+  /etc/andrzej-tools.conf
+
+Edytuj config (recipient, PING_TARGETS, throttle):
+  sudo nano /etc/andrzej-tools.conf
+
+Włącz usługi:
+  sudo systemctl enable --now ping-watch.timer
+  sudo systemctl enable --now boot-mail.service
+  sudo systemctl enable --now auth-watch.service
+
+Podgląd logów:
+  journalctl -u auth-watch.service -f -o cat
+  journalctl -t sshd -t sshd-session -f -o cat
+MSG
+}
+
+post_upgrade() {
+  cat <<'MSG'
+==> andrzej-tools: aktualizacja zakończona
+
+Uwaga: /etc/andrzej-tools.conf jest plikiem "backup".
+Jeśli pacman utworzył plik .pacnew, porównaj i scal:
+  ls -la /etc/andrzej-tools.conf.pacnew 2>/dev/null || true
+MSG
+}

@@ -1,7 +1,8 @@
 pkgname=andrzej-tools
-pkgver=0.1.1
-pkgrel=2
+pkgver=0.1.6
+pkgrel=1
 pkgdesc="Andrzej system tools (ping-watch, boot-mail, auth-watch)"
+install=andrzej-tools.install
 arch=('any')
 license=('MIT')
 depends=('bash' 'iputils' 'msmtp' 'systemd' 'util-linux' 'iproute2' 'coreutils')
@@ -9,6 +10,7 @@ depends=('bash' 'iputils' 'msmtp' 'systemd' 'util-linux' 'iproute2' 'coreutils')
 backup=('etc/andrzej-tools.conf')
 
 source=(
+  "andrzej-tools.install"
   "andrzej-tools.conf"
   "ping-watch"
   "ping-watch.service"
@@ -19,7 +21,15 @@ source=(
   "auth-watch.service"
 )
 
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+sha256sums=('96287ed77561c9f395cc613792c3e69da7730cacec4d8bb8bcb2c2e2a1ad2a34'
+            'c745d89e594a73e27f77fc7ed77acd027d48ae47c15017305054c4c7c1085703'
+            '76270d59e1c629141bb1e952cb000a3f2582743ec766fa49ee082696d1c1a88f'
+            'aa025ce896dce8274396a809415d20a29eba2739390d44114dad94531c819e18'
+            '78a8383b9b8605b35bc9864b29335eb091c1e61961f635b11c3fd4b41d702de5'
+            '19f69c698ad2b44acacc4b1bf3a882cb46cea4bef1ffe0f1776582da3db954b1'
+            '8eb0bd11a9ef481912b5422826b8eef313274694133e80cce58f1d098ca04c09'
+            '7fb296cca9902323f57e6488f30e9545ec4a93e7914a7d18f0e711a8eb8b5b34'
+            '327d0e7accffa420b5b5c3fb708e9fff1b8b62dd55e9cc236ad0bf955dddde84')
 
 package() {
   # config

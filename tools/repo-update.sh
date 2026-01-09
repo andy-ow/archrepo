@@ -39,5 +39,7 @@ if (( ${#REPO_PKGS[@]} == 0 )); then
   exit 1
 fi
 
+cd "$REPO_DIR"
+ls -1t andrzej-tools-*.pkg.tar* | tail -n +4 | xargs -r rm -f
 repo-add "${REPONAME}.db.tar.gz" "${REPO_PKGS[@]}"
 echo "OK: Zaktualizowano repo: $REPO_DIR (${#REPO_PKGS[@]} paczek)"

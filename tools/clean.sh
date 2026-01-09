@@ -2,5 +2,4 @@
 set -euo pipefail
 pkgdir="${1:?podaj katalog paczki, np. packages/andrzej-tools}"
 cd "$pkgdir"
-updpkgsums
-makepkg -s --noconfirm
+makepkg -s --noconfirm -cC

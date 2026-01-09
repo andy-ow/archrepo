@@ -8,38 +8,33 @@ REPO_DIR="$ROOT/repo/$ARCH"
 
 mkdir -p "$REPO_DIR"
 
-# 1) znajdź wszystkie paczki z packages/* (2 poziomy), niezależnie od PKGEXT
+# 1) skopiuj wszystkie zbudowane paczki do repo/
 mapfile -d '' PKGS < <(
   find "$ROOT/packages" -maxdepth 2 -type f \
     \( -name '*.pkg.tar' -o -name '*.pkg.tar.*' \) \
     ! -name '*.sig' -print0
 )
-
 if (( ${#PKGS[@]} == 0 )); then
-  echo "ERROR: Nie znaleziono żadnych paczek w $ROOT/packages (zrób najpierw build)."
+  echo "ERROR: brak paczek w $ROOT/packages (najpierw build)."
   exit 1
 fi
-
-# 2) skopiuj do repo/x86_64 (tylko jeśli nowsze)
 for p in "${PKGS[@]}"; do
   cp -u "$p" "$REPO_DIR/"
 done
 
-# 3) zaktualizuj bazę repo
 cd "$REPO_DIR"
 
+# 2) wyczyść stare bazy (żeby nie było błędów 'file not found')
+rm -f "${REPONAME}.db.tar.gz" "${REPONAME}.files.tar.gz" \
+      "${REPONAME}.db.tar.gz.old" "${REPONAME}.files.tar.gz.old"
+rm -rf "${REPONAME}.db" "${REPONAME}.files"
+
+# 3) zbuduj bazę na podstawie paczek, które realnie są w repo/
 mapfile -d '' REPO_PKGS < <(
   find . -maxdepth 1 -type f \
     \( -name '*.pkg.tar' -o -name '*.pkg.tar.*' \) \
     ! -name '*.sig' -print0
 )
-
-if (( ${#REPO_PKGS[@]} == 0 )); then
-  echo "ERROR: W $REPO_DIR nie ma paczek po skopiowaniu (to nie powinno się zdarzyć)."
-  exit 1
-fi
-
-cd "$REPO_DIR"
-ls -1t andrzej-tools-*.pkg.tar* | tail -n +4 | xargs -r rm -f
 repo-add "${REPONAME}.db.tar.gz" "${REPO_PKGS[@]}"
-echo "OK: Zaktualizowano repo: $REPO_DIR (${#REPO_PKGS[@]} paczek)"
+
+echo "OK: Rebuilt repo db in $REPO_DIR (${#REPO_PKGS[@]} paczek)"

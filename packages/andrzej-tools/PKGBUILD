@@ -1,6 +1,6 @@
 pkgname=andrzej-tools
 pkgver=0.1.6
-pkgrel=1
+pkgrel=6
 pkgdesc="Andrzej system tools (ping-watch, boot-mail, auth-watch)"
 install=andrzej-tools.install
 arch=('any')
@@ -24,7 +24,7 @@ source=(
 sha256sums=('96287ed77561c9f395cc613792c3e69da7730cacec4d8bb8bcb2c2e2a1ad2a34'
             'c745d89e594a73e27f77fc7ed77acd027d48ae47c15017305054c4c7c1085703'
             '76270d59e1c629141bb1e952cb000a3f2582743ec766fa49ee082696d1c1a88f'
-            'aa025ce896dce8274396a809415d20a29eba2739390d44114dad94531c819e18'
+            '63c2b437536198ac72587c0b7285fe192eb7bd0c930f931f8326a9bc53dea5ec'
             '78a8383b9b8605b35bc9864b29335eb091c1e61961f635b11c3fd4b41d702de5'
             '19f69c698ad2b44acacc4b1bf3a882cb46cea4bef1ffe0f1776582da3db954b1'
             '8eb0bd11a9ef481912b5422826b8eef313274694133e80cce58f1d098ca04c09'

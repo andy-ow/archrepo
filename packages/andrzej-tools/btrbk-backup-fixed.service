@@ -1,0 +1,13 @@
+[Unit]
+Description=ANDRZEJ: daily btrbk backup to fixed disks
+Documentation=man:btrbk(1)
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/btrbk-backup-fixed
+TimeoutStartSec=infinity
+TimeoutStopSec=30min
+KillSignal=SIGINT
+StandardOutput=journal+console
+StandardError=journal+console

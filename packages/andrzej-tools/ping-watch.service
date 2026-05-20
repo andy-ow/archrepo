@@ -5,6 +5,6 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-LogLevelMax=3
+LogLevelMax=warning
 Environment=CONFIG=/etc/andrzej-tools.conf
 ExecStart=/usr/local/sbin/ping-watch

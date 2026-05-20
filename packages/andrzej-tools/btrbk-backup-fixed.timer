@@ -1,0 +1,10 @@
+[Unit]
+Description=ANDRZEJ: run fixed btrbk backup daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target

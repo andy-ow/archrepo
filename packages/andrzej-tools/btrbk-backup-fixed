@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec /usr/bin/systemd-inhibit \
+  --what=shutdown:sleep \
+  --mode=delay \
+  --who=btrbk-backup-fixed \
+  --why="ANDRZEJ: btrbk backup is running; shutdown/reboot is waiting for backup to finish" \
+  /usr/bin/btrbk -c /etc/btrbk/btrbk.conf run fixed

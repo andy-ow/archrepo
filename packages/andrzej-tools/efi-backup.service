@@ -1,0 +1,13 @@
+[Unit]
+Description=Andrzej EFI partition image backup
+Documentation=man:dd(1) man:zstd(1)
+Documentation=file:/usr/share/doc/andrzej-tools/efi-backup-restore.md
+RequiresMountsFor=/home/andrzej/Backup
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/efi-backup
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

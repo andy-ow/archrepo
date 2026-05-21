@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONF="/etc/andrzej-tools.conf"
+
+if [[ -r "$CONF" ]]; then
+  # shellcheck disable=SC1090
+  source "$CONF"
+fi
+
+: "${EFI_BACKUP_SRC:?Set EFI_BACKUP_SRC in /etc/andrzej-tools.conf, e.g. /dev/disk/by-uuid/XXXX-XXXX}"
+
+EFI_BACKUP_DEST="${EFI_BACKUP_DEST:-/home/andrzej/Backup/efi-images}"
+EFI_BACKUP_KEEP_DAYS="${EFI_BACKUP_KEEP_DAYS:-365}"
+EFI_BACKUP_COMPRESSION_LEVEL="${EFI_BACKUP_COMPRESSION_LEVEL:--19}"
+EFI_BACKUP_PREFIX="${EFI_BACKUP_PREFIX:-efi}"
+
+timestamp="$(date +%F_%H%M%S)"
+host="$(hostname)"
+tmp_file="${EFI_BACKUP_DEST}/.${EFI_BACKUP_PREFIX}-${host}-${timestamp}.img.zst.tmp"
+out_file="${EFI_BACKUP_DEST}/${EFI_BACKUP_PREFIX}-${host}-${timestamp}.img.zst"
+
+if [[ $EUID -ne 0 ]]; then
+  echo "efi-backup: run as root" >&2
+  exit 1
+fi
+
+if [[ ! -b "$EFI_BACKUP_SRC" ]]; then
+  echo "efi-backup: source block device not found: $EFI_BACKUP_SRC" >&2
+  exit 1
+fi
+
+mkdir -p "$EFI_BACKUP_DEST"
+
+if ! mountpoint -q /home/andrzej/Backup; then
+  echo "efi-backup: warning: /home/andrzej/Backup is not a mountpoint" >&2
+  echo "efi-backup: backup may be written to the root filesystem instead of the intended backup disk" >&2
+  echo "efi-backup: refusing to write backup to root filesystem" >&2
+  exit 1
+fi
+
+echo "efi-backup: source: $EFI_BACKUP_SRC"
+echo "efi-backup: destination: $out_file"
+
+dd if="$EFI_BACKUP_SRC" bs=4M status=progress \
+  | zstd "$EFI_BACKUP_COMPRESSION_LEVEL" -T0 -q \
+  > "$tmp_file"
+
+sync -f "$tmp_file" 2>/dev/null || sync
+
+mv -f "$tmp_file" "$out_file"
+
+sha256sum "$out_file" > "${out_file}.sha256"
+
+find "$EFI_BACKUP_DEST" \
+  -type f \
+  \( -name "${EFI_BACKUP_PREFIX}-*.img.zst" -o -name "${EFI_BACKUP_PREFIX}-*.img.zst.sha256" \) \
+  -mtime +"$EFI_BACKUP_KEEP_DAYS" \
+  -delete
+
+echo "efi-backup: done"
+echo "efi-backup: created: $out_file"

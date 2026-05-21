@@ -12,10 +12,14 @@ Włącz usługi:
   sudo systemctl enable --now ping-watch.timer
   sudo systemctl enable --now boot-mail.service
   sudo systemctl enable --now auth-watch.service
+  sudo systemctl enable --now btrbk-backup-fixed.timer
+  sudo systemctl enable --now efi-backup.timer
 
 Podgląd logów:
   journalctl -u auth-watch.service -f -o cat
   journalctl -t sshd -t sshd-session -f -o cat
+  journalctl -u efi-backup.service -n 100 --no-pager
+  journalctl -u btrbk-backup-fixed.service -n 100 --no-pager
 MSG
 }
 

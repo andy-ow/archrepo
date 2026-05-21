@@ -1,10 +1,11 @@
 pkgname=andrzej-tools
 pkgver=0.1.7
-pkgrel=1
-pkgdesc="Andrzej system tools (ping-watch, boot-mail, auth-watch, btrbk-backup)"install=andrzej-tools.install
+pkgrel=2
+pkgdesc="Andrzej system tools (ping-watch, boot-mail, auth-watch, btrbk-backup, efi-backup)"
+install=andrzej-tools.install
 arch=('any')
 license=('MIT')
-depends=('bash' 'iputils' 'msmtp' 'systemd' 'util-linux' 'iproute2' 'coreutils' 'btrbk')
+depends=('bash' 'iputils' 'msmtp' 'systemd' 'util-linux' 'iproute2' 'coreutils' 'btrbk' 'zstd')
 
 backup=('etc/andrzej-tools.conf')
 
@@ -22,10 +23,14 @@ source=(
   "btrbk-backup-usb"
   "btrbk-backup-fixed.service"
   "btrbk-backup-fixed.timer"
+  "efi-backup"
+  "efi-backup.service"
+  "efi-backup.timer"
+  "efi-backup-restore.md"
 )
 
-sha256sums=('96287ed77561c9f395cc613792c3e69da7730cacec4d8bb8bcb2c2e2a1ad2a34'
-            'c745d89e594a73e27f77fc7ed77acd027d48ae47c15017305054c4c7c1085703'
+sha256sums=('7df852b2a56d6a079318819664965ed0b362775a5ba422834def561c20ee5519'
+            '456b7d2ddf5bf8d3ad5e81a420168f94866099d7d227ceed3db11164377ad74d'
             '76270d59e1c629141bb1e952cb000a3f2582743ec766fa49ee082696d1c1a88f'
             '9cb1fb48cbecaee090b09cf3a597861209c974d8485f9eb9d3c168b124d869de'
             '78a8383b9b8605b35bc9864b29335eb091c1e61961f635b11c3fd4b41d702de5'
@@ -36,11 +41,16 @@ sha256sums=('96287ed77561c9f395cc613792c3e69da7730cacec4d8bb8bcb2c2e2a1ad2a34'
             'c454aad253bc97907ebed4f48306b5476e3400ec64b38b740a6f66f4568660ec'
             '0b463cc037990a28b226d62b44d16780aa5b60b619163584ef91a5e7cb95fe25'
             '3172969a6d35f6b5feeca160f1efc722180fa5a7310c6f61d0d14dd38cbde2bb'
-            '1a5b06e5267e2af74f65185844c4bc311e9a65e3b38d008d94496cf4659ae2ee')
+            '1a5b06e5267e2af74f65185844c4bc311e9a65e3b38d008d94496cf4659ae2ee'
+            'b583c668493c9169f8267b71b665b47bf86eaf8b18d236a1664745fb6b603621'
+            'd0543b4c218cc408bf8c8de635c473c7e840dc2caa8fa74b83ff17ba33c54a39'
+            'e2966ee6e5b7020cc196992414738012e38b001db82fb93636b00fa57b71b5f9'
+            '4e485ffe5851d255939bf1bc149b141ac75c9be8a25bff1afea3666d00839ccc')
 
 package() {
   # config
   install -Dm644 andrzej-tools.conf "$pkgdir/etc/andrzej-tools.conf"
+  install -Dm644 efi-backup-restore.md "$pkgdir/usr/share/doc/andrzej-tools/efi-backup-restore.md"
 
   # scripts
   install -Dm755 ping-watch "$pkgdir/usr/local/sbin/ping-watch"
@@ -48,6 +58,7 @@ package() {
   install -Dm755 auth-watch "$pkgdir/usr/local/sbin/auth-watch"
   install -Dm755 btrbk-backup-fixed "$pkgdir/usr/local/sbin/btrbk-backup-fixed"
   install -Dm755 btrbk-backup-usb   "$pkgdir/usr/local/sbin/btrbk-backup-usb"
+  install -Dm755 efi-backup "$pkgdir/usr/local/sbin/efi-backup"
 
   # systemd units
   install -Dm644 ping-watch.service "$pkgdir/usr/lib/systemd/system/ping-watch.service"
@@ -56,4 +67,6 @@ package() {
   install -Dm644 auth-watch.service "$pkgdir/usr/lib/systemd/system/auth-watch.service"
   install -Dm644 btrbk-backup-fixed.service "$pkgdir/usr/lib/systemd/system/btrbk-backup-fixed.service"
   install -Dm644 btrbk-backup-fixed.timer   "$pkgdir/usr/lib/systemd/system/btrbk-backup-fixed.timer"
+  install -Dm644 efi-backup.service "$pkgdir/usr/lib/systemd/system/efi-backup.service"
+  install -Dm644 efi-backup.timer "$pkgdir/usr/lib/systemd/system/efi-backup.timer"
 }
